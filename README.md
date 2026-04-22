@@ -77,7 +77,7 @@ Built to combine **speed of ephemeral chat** with **depth of persistent messagin
 
 ```bash
 # clone repo
-git clone https://github.com/rohankohalli/blinkchat
+git clone https://github.com/rohankohalli/BlinkChat
 
 # install server
 cd server
@@ -87,13 +87,14 @@ npm install
 cd ../client
 npm install
 
-# # run both
-# npm start
+# run both
+npm start 
+
 ```
 
 ---
 
-<!-- ## 🌐 Deployment
+<!-- ## Deployment
 
 * Frontend: Vercel
 * Backend: Render
@@ -101,7 +102,7 @@ npm install
 
 --- -->
 
-## 📌 Future Improvements
+## Future Improvements
 
 * Typing indicators
 * Read receipts
@@ -109,7 +110,7 @@ npm install
 
 ---
 
-<!-- ## 👨‍💻 Author
+<!-- ## Author
 
 **Rohan Kohalli**
 
@@ -117,7 +118,7 @@ npm install
 
 --- -->
 
-## ⭐ Project Focus
+## Project Focus
 
 This project demonstrates:
 
