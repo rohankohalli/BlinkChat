@@ -1,6 +1,5 @@
 import pool from '../config/db.js';
 
-// GET /api/users/online — list all online users (excluding self)
 export const getOnlineUsers = async (req, res) => {
   try {
     const [rows] = await pool.execute(
@@ -17,13 +16,11 @@ export const getOnlineUsers = async (req, res) => {
   }
 };
 
-// GET /api/users/search?q= — search users by username
 export const searchUsers = async (req, res) => {
   try {
     const { q } = req.query;
-    if (!q || q.trim().length < 2) {
+    if (!q || q.trim().length < 2)
       return res.status(400).json({ error: 'Query must be at least 2 characters' });
-    }
 
     const [rows] = await pool.execute(
       `SELECT id, username, avatar, status

@@ -5,6 +5,7 @@ import cors from 'cors';
 import env from './config/env.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -25,11 +26,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'BlinkChat server is running' });
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
+// Global error handler — must be last
+app.use(errorHandler);
 
 // Socket.IO placeholder
 io.on('connection', (socket) => {
