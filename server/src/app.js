@@ -2,10 +2,14 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import env from './config/env.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
+import inviteRoutes from './routes/inviteRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
+
+import socketHandler from './utils/socketHandler.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -20,6 +24,9 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/conversations', chatRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/invites', inviteRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -29,12 +36,12 @@ app.get('/api/health', (req, res) => {
 // Global error handler — must be last
 app.use(errorHandler);
 
-// Socket.IO placeholder
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
-  socket.on('disconnect', () => console.log('User disconnected:', socket.id));
-});
+// Initialize Socket.IO Handler
+socketHandler(io);
 
-server.listen(env.PORT, () => {
-  console.log(`✅ BlinkChat server running on port ${env.PORT}`);
+// Make io instance available in request for controllers (optional but useful)
+app.set('io', io);
+
+server.listen(process.env.PORT || 8000, () => {
+  console.log(`✅ BlinkChat server running on port ${process.env.PORT || 8000}`);
 });
