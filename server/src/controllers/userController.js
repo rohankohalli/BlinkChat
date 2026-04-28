@@ -1,9 +1,9 @@
-import { sendSuccess, sendError } from '../utils/responseHandler.js';
-import { User } from '../models/User.js';
+import { UserService } from '../services/userService.js';
+import { sendSuccess } from '../utils/responseHandler.js';
 
 export const getOnlineUsers = async (req, res, next) => {
   try {
-    const users = await User.getOnline(req.user.id);
+    const users = await UserService.getOnlineUsers(req.user.id);
     sendSuccess(res, users);
   } catch (err) {
     next(err);
@@ -13,10 +13,7 @@ export const getOnlineUsers = async (req, res, next) => {
 export const searchUsers = async (req, res, next) => {
   try {
     const { q } = req.query;
-    if (!q || q.trim().length < 2)
-      return sendError(res, 'Query must be at least 2 characters', 400);
-
-    const users = await User.search(q.trim(), req.user.id);
+    const users = await UserService.searchUsers(q || '', req.user.id);
     sendSuccess(res, users);
   } catch (err) {
     next(err);

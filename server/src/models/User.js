@@ -1,57 +1,13 @@
-import pool from '../config/db.js';
-
-export const User = {
-  async findByEmail(email) {
-    const [rows] = await pool.execute(
-      'SELECT id, username, email, password_hash, avatar, status FROM users WHERE email = ?',
-      [email]
-    );
-    return rows[0];
-  },
-
-  async findById(id) {
-    const [rows] = await pool.execute(
-      'SELECT id, username, email, avatar, status, last_seen, created_at FROM users WHERE id = ?',
-      [id]
-    );
-    return rows[0];
-  },
-
-  async create({ username, email, password_hash, avatar }) {
-    const [result] = await pool.execute(
-      'INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)',
-      [username, email, password_hash, avatar]
-    );
-    return { id: result.insertId, username, email, avatar };
-  },
-
-  async exists(email, username) {
-    const [rows] = await pool.execute(
-      'SELECT id FROM users WHERE email = ? OR username = ?',
-      [email, username]
-    );
-    return rows.length > 0;
-  },
-
-  async getOnline(excludeId) {
-    const [rows] = await pool.execute(
-      `SELECT id, username, avatar, status, last_seen
-       FROM users
-       WHERE status = 'online' AND id != ?
-       ORDER BY username ASC`,
-      [excludeId]
-    );
-    return rows;
-  },
-
-  async search(query, excludeId) {
-    const [rows] = await pool.execute(
-      `SELECT id, username, avatar, status
-       FROM users
-       WHERE username LIKE ? AND id != ?
-       LIMIT 20`,
-      [`%${query}%`, excludeId]
-    );
-    return rows;
+export const UserSchema = {
+  tableName: 'users',
+  fields: {
+    id: 'INT AUTO_INCREMENT PRIMARY KEY',
+    username: 'VARCHAR(50) UNIQUE NOT NULL',
+    email: 'VARCHAR(255) UNIQUE NOT NULL',
+    password_hash: 'VARCHAR(255) NOT NULL',
+    avatar: "VARCHAR(20) DEFAULT 'avatar_1'",
+    status: "ENUM('online', 'offline', 'away') DEFAULT 'offline'",
+    last_seen: 'DATETIME NULL',
+    created_at: 'DATETIME DEFAULT CURRENT_TIMESTAMP'
   }
 };

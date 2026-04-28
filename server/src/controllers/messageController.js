@@ -1,38 +1,14 @@
-import { sendSuccess, sendError } from '../utils/responseHandler.js';
-import { Message } from '../models/Message.js';
-import { Conversation } from '../models/Conversation.js';
+import { MessageService } from '../services/messageService.js';
+import { sendSuccess } from '../utils/responseHandler.js';
 
 export const sendMessage = async (req, res, next) => {
   try {
-    const { conversationId, content } = req.body;
-    const userId = req.user.id;
-
-    if (!conversationId || !content) {
-      return sendError(res, 'Conversation ID and content are required', 400);
-    }
-
-    const isParticipant = await Conversation.isParticipant(conversationId, userId);
-    if (!isParticipant) {
-      return sendError(res, 'Not authorized to send messages here', 403);
-    }
-
-    const messageId = await Message.create({ conversationId, senderId: userId, content });
-    await Conversation.updateLastMessage(conversationId);
-
-    const newMessage = {
-      id: messageId,
-      conversation_id: conversationId,
-      sender_id: userId,
+    const newMessage = await MessageService.sendMessage({
+      ...req.body,
+      userId: req.user.id,
       username: req.user.username,
-      content,
-      created_at: new Date()
-    };
-
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`conv_${conversationId}`).emit('new_message', newMessage);
-    }
-
+      io: req.app.get('io')
+    });
     sendSuccess(res, newMessage, 'Message sent successfully', 201);
   } catch (err) {
     next(err);
@@ -41,15 +17,7 @@ export const sendMessage = async (req, res, next) => {
 
 export const getMessages = async (req, res, next) => {
   try {
-    const { conversationId } = req.params;
-    const userId = req.user.id;
-
-    const isParticipant = await Conversation.isParticipant(conversationId, userId);
-    if (!isParticipant) {
-      return sendError(res, 'Not authorized to view these messages', 403);
-    }
-
-    const messages = await Message.getByConversationId(conversationId);
+    const messages = await MessageService.getMessages(req.params.conversationId, req.user.id);
     sendSuccess(res, messages);
   } catch (err) {
     next(err);
