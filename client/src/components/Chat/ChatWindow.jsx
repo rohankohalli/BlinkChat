@@ -1,15 +1,17 @@
 import React from 'react';
 import { styles } from '../../pages/Dashboard.styles';
 
-const ChatWindow = ({ 
-  user, 
-  activeChat, 
-  messages, 
-  message, 
-  setMessage, 
-  onSendMessage, 
-  onShowCreateModal, 
+const ChatWindow = ({
+  user,
+  activeChat,
+  messages,
+  message,
+  setMessage,
+  onSendMessage,
+  onShowCreateModal,
   onShowJoinModal,
+  onShowInviteModal,
+  onLeaveRoom,
   messagesEndRef
 }) => {
   if (!activeChat) {
@@ -41,6 +43,20 @@ const ChatWindow = ({
               {activeChat.type === 'ephemeral' && ` • Room Code: ${activeChat.room_code}`}
             </div>
           </div>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => onShowInviteModal(true)}
+            style={{ ...styles.secondaryButton, padding: '8px 16px', fontSize: '13px', borderRadius: '8px' }}
+          >
+            Invite
+          </button>
+          <button
+            onClick={onLeaveRoom}
+            style={{ ...styles.ghostButton, color: '#ff4d4d', padding: '8px 16px', fontSize: '13px', borderRadius: '8px', border: '1px solid rgba(255, 77, 77, 0.2)' }}
+          >
+            Leave
+          </button>
         </div>
       </div>
 

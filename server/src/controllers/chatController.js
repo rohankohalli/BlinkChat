@@ -30,3 +30,13 @@ export const joinEphemeralRoom = async (req, res, next) => {
     next(err);
   }
 };
+
+export const leaveConversation = async (req, res, next) => {
+  try {
+    const { conversationId } = req.params;
+    await ChatService.leaveRoom(conversationId, req.user.id);
+    sendSuccess(res, null, 'Left room successfully');
+  } catch (err) {
+    next(err);
+  }
+};

@@ -58,5 +58,13 @@ export const ChatService = {
 
     await ConversationRepository.addParticipant(room.id, userId, 'member');
     return { conversationId: room.id };
+  },
+
+  async leaveRoom(conversationId, userId) {
+    const isParticipant = await ConversationRepository.isParticipant(conversationId, userId);
+    if (!isParticipant) {
+      throw new AppError('You are not in this room', 404);
+    }
+    return await ConversationRepository.removeParticipant(conversationId, userId);
   }
 };

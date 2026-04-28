@@ -1,31 +1,67 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Rich Deep Ocean & Emerald Theme */
-  --bg-base: #020617; /* Very dark slate blue */
-  --bg-panel: rgba(15, 23, 42, 0.6); /* Translucent Slate */
-  
-  /* The "Wow" Green/Blue Accents */
+  /* Core Brand Colors (Shared) */
   --accent-cyan: #06b6d4;
   --accent-emerald: #10b981;
   --accent-ocean: #0369a1;
-  
   --gradient-primary: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
   
-  /* Borders & UI */
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(6, 182, 212, 0.5);
+  /* Status Colors */
+  --status-online: #10b981;
+  --status-away: #f59e0b;
+  --status-offline: #64748b;
   
-  /* Text */
+  /* Layout Tokens */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Default Dark Theme (Midnight Indigo) */
+  --bg-base: #030712; /* Deepest Indigo/Slate */
+  --bg-panel: rgba(17, 24, 39, 0.7);
+  --bg-input: rgba(255, 255, 255, 0.04);
+  --bg-msg-other: rgba(255, 255, 255, 0.05);
+  --bg-modal: #0f172a;
+  --bg-overlay: rgba(0, 0, 0, 0.8);
+  --bg-sidebar-footer: rgba(0, 0, 0, 0.2);
+  
+  --border-light: rgba(255, 255, 255, 0.06);
+  --border-focus: rgba(99, 102, 241, 0.5); /* Indigo focus */
+  
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #475569;
   
-  /* Layout */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --panel-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.8);
+  --aurora-opacity: 0.18;
 }
+
+[data-theme='light'] {
+  --bg-base: #f8fafc;
+  --bg-panel: rgba(255, 255, 255, 0.8);
+  --bg-input: rgba(0, 0, 0, 0.03);
+  --bg-msg-other: rgba(0, 0, 0, 0.05);
+  --bg-modal: #ffffff;
+  --bg-overlay: rgba(15, 23, 42, 0.4);
+  --bg-sidebar-footer: rgba(0, 0, 0, 0.03);
+  
+  --accent-cyan: #0891b2;
+  --accent-emerald: #059669;
+  
+  --border-light: rgba(0, 0, 0, 0.06);
+  --border-focus: rgba(8, 145, 178, 0.3);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --panel-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+  --aurora-opacity: 0.1;
+}
+
+/* System sync handled via JS by adding data-theme attribute */
 
 * {
   box-sizing: border-box;
@@ -42,9 +78,10 @@ body {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Ambient "Aurora" Background effect for a rich but non-generic vibe */
+/* Ambient "Aurora" Background */
 body::before, body::after {
   content: '';
   position: absolute;
@@ -53,7 +90,7 @@ body::before, body::after {
   border-radius: 50%;
   filter: blur(120px);
   z-index: -1;
-  opacity: 0.15;
+  opacity: var(--aurora-opacity);
   animation: float 20s infinite alternate ease-in-out;
 }
 
@@ -76,17 +113,16 @@ body::after {
   100% { transform: translate(-5%, -5%) scale(0.95); }
 }
 
-/* Modern Premium Panel */
 .panel {
   background: var(--bg-panel);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--panel-shadow);
+  transition: background 0.3s ease, border 0.3s ease;
 }
 
-/* Base Form Elements */
 button {
   font-family: inherit;
   cursor: pointer;
@@ -95,36 +131,23 @@ button {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-button:active {
-  transform: scale(0.98);
-}
+button:active { transform: scale(0.98); }
 
 input {
   font-family: inherit;
   outline: none;
 }
 
-/* Animations */
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-entrance {
-  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Gradient Text */
 .text-gradient {
   background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -132,17 +155,15 @@ input {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(128, 128, 128, 0.2);
   border-radius: 10px;
-  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--gradient-primary);
 }
 
-/* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: rgba(128, 128, 128, 0.2) transparent;
 }

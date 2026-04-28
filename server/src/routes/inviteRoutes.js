@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { sendInvite, getPendingInvites, respondToInvite } from '../controllers/inviteController.js';
+import { sendInvite, getMyInvites, respondToInvite } from '../controllers/inviteController.js';
 import auth from '../middlewares/auth.js';
 
 const router = Router();
@@ -7,7 +7,7 @@ const router = Router();
 router.use(auth);
 
 router.post('/', sendInvite);
-router.get('/', getPendingInvites);
-router.put('/:id', respondToInvite);
+router.get('/', getMyInvites);
+router.put('/:inviteId', respondToInvite);
 
 export default router;
