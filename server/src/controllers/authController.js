@@ -1,78 +1,62 @@
-import pool from '../config/db.js';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../utils/jwt.js';
+import { sendSuccess, sendError } from '../utils/responseHandler.js';
+import { User } from '../models/User.js';
 
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   try {
     const { username, email, password, avatar } = req.body;
 
     if (!username || !email || !password)
-      return res.status(400).json({ error: 'Username, email and password are required' });
+      return sendError(res, 'Username, email and password are required', 400);
+    
     if (password.length < 6)
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+      return sendError(res, 'Password must be at least 6 characters', 400);
 
-    const [existing] = await pool.execute(
-      'SELECT id FROM users WHERE email = ? OR username = ?',
-      [email, username]
-    );
-    if (existing.length > 0)
-      return res.status(409).json({ error: 'Username or email already taken' });
+    const exists = await User.exists(email, username);
+    if (exists)
+      return sendError(res, 'Username or email already taken', 409);
 
     const password_hash = await bcrypt.hash(password, 12);
     const avatarChoice = avatar || 'avatar_1';
 
-    const [result] = await pool.execute(
-      'INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)',
-      [username, email, password_hash, avatarChoice]
-    );
-
-    const user = { id: result.insertId, username, email, avatar: avatarChoice };
-    res.status(201).json({ user, token: generateToken(user) });
+    const user = await User.create({ username, email, password_hash, avatar: avatarChoice });
+    sendSuccess(res, { user, token: generateToken(user) }, 'User registered successfully', 201);
   } catch (err) {
-    console.error('Register error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 };
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password)
-      return res.status(400).json({ error: 'Email and password are required' });
+      return sendError(res, 'Email and password are required', 400);
 
-    const [rows] = await pool.execute(
-      'SELECT id, username, email, password_hash, avatar, status FROM users WHERE email = ?',
-      [email]
-    );
-    if (rows.length === 0)
-      return res.status(401).json({ error: 'Invalid credentials' });
+    const user = await User.findByEmail(email);
+    if (!user)
+      return sendError(res, 'Invalid credentials', 401);
 
-    const user = rows[0];
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match)
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return sendError(res, 'Invalid credentials', 401);
 
     delete user.password_hash;
-    res.json({ user, token: generateToken(user) });
+    sendSuccess(res, { user, token: generateToken(user) }, 'Logged in successfully');
   } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 };
 
-export const getMe = async (req, res) => {
+export const getMe = async (req, res, next) => {
   try {
-    const [rows] = await pool.execute(
-      'SELECT id, username, email, avatar, status, last_seen, created_at FROM users WHERE id = ?',
-      [req.user.id]
-    );
-    if (rows.length === 0)
-      return res.status(404).json({ error: 'User not found' });
+    const user = await User.findById(req.user.id);
+    if (!user)
+      return sendError(res, 'User not found', 404);
 
-    res.json({ user: rows[0] });
+    sendSuccess(res, { user });
   } catch (err) {
-    console.error('GetMe error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 };

@@ -1,37 +1,24 @@
-import pool from '../config/db.js';
+import { sendSuccess, sendError } from '../utils/responseHandler.js';
+import { User } from '../models/User.js';
 
-export const getOnlineUsers = async (req, res) => {
+export const getOnlineUsers = async (req, res, next) => {
   try {
-    const [rows] = await pool.execute(
-      `SELECT id, username, avatar, status, last_seen
-       FROM users
-       WHERE status = 'online' AND id != ?
-       ORDER BY username ASC`,
-      [req.user.id]
-    );
-    res.json({ users: rows });
+    const users = await User.getOnline(req.user.id);
+    sendSuccess(res, users);
   } catch (err) {
-    console.error('GetOnlineUsers error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 };
 
-export const searchUsers = async (req, res) => {
+export const searchUsers = async (req, res, next) => {
   try {
     const { q } = req.query;
     if (!q || q.trim().length < 2)
-      return res.status(400).json({ error: 'Query must be at least 2 characters' });
+      return sendError(res, 'Query must be at least 2 characters', 400);
 
-    const [rows] = await pool.execute(
-      `SELECT id, username, avatar, status
-       FROM users
-       WHERE username LIKE ? AND id != ?
-       LIMIT 20`,
-      [`%${q.trim()}%`, req.user.id]
-    );
-    res.json({ users: rows });
+    const users = await User.search(q.trim(), req.user.id);
+    sendSuccess(res, users);
   } catch (err) {
-    console.error('SearchUsers error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 };

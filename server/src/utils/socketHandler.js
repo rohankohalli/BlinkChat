@@ -34,10 +34,24 @@ export default (io) => {
     // Join personal room for notifications
     socket.join(`user_${socket.user.id}`);
 
-    // Join conversation rooms
+    // Automatically join all existing conversation rooms
+    try {
+      const [userConvs] = await pool.execute(
+        'SELECT conversation_id FROM conversation_participants WHERE user_id = ?',
+        [socket.user.id]
+      );
+      userConvs.forEach(conv => {
+        socket.join(`conv_${conv.conversation_id}`);
+      });
+      console.log(`${socket.user.username} joined ${userConvs.length} conversation rooms`);
+    } catch (err) {
+      console.error('Error joining user to rooms:', err);
+    }
+
+    // Handle joining new rooms (e.g. when creating or joining an ephemeral room)
     socket.on('join_room', (conversationId) => {
       socket.join(`conv_${conversationId}`);
-      console.log(`${socket.user.username} joined room: conv_${conversationId}`);
+      console.log(`${socket.user.username} explicitly joined room: conv_${conversationId}`);
     });
 
     socket.on('leave_room', (conversationId) => {

@@ -7,9 +7,12 @@ import userRoutes from './routes/userRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import inviteRoutes from './routes/inviteRoutes.js';
-import errorHandler from './middleware/errorHandler.js';
+import errorHandler from './middlewares/errorHandler.js';
 
 import socketHandler from './utils/socketHandler.js';
+
+import helmet from 'helmet';
+import morgan from 'morgan';
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +21,8 @@ const io = new Server(server, {
 });
 
 // Middleware
+app.use(helmet()); // Security headers
+app.use(morgan('dev')); // Request logging
 app.use(cors());
 app.use(express.json());
 
@@ -43,5 +48,5 @@ socketHandler(io);
 app.set('io', io);
 
 server.listen(process.env.PORT || 8000, () => {
-  console.log(`✅ BlinkChat server running on port ${process.env.PORT || 8000}`);
+  console.log(`BlinkChat server running on port ${process.env.PORT || 8000}`);
 });

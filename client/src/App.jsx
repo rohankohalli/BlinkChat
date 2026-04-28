@@ -31,7 +31,7 @@ function App() {
             </PublicRoute>
           } />
           
-          <Route path="/chat/*" element={
+          <Route path="/chat/:conversationId?" element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>

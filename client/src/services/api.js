@@ -16,9 +16,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Intercept responses to handle 401 Unauthorized globally
+// Intercept responses to extract data and handle 401s
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // If our backend returned the standard format { success, data, message }
+    if (response.data && response.data.success !== undefined) {
+      return response.data;
+    }
+    return response;
+  },
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('blink_token');

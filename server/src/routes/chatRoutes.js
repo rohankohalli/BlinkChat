@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { createConversation, getConversations, joinEphemeralRoom } from '../controllers/chatController.js';
-import auth from '../middleware/auth.js';
+import auth from '../middlewares/auth.js';
 
 const router = Router();
 
