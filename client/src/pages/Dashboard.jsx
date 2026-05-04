@@ -18,6 +18,8 @@ const Dashboard = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
 
+  const [socket, setSocket] = useState(null);
+
   const {
     conversations, setConversations,
     activeChat, setActiveChat,
@@ -27,7 +29,7 @@ const Dashboard = () => {
     handleSelectChat,
     sendMessage,
     activeChatRef
-  } = useChat(user, conversationId);
+  } = useChat(user, conversationId, socket);
 
   const [message, setMessage] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -96,7 +98,8 @@ const Dashboard = () => {
   useEffect(() => {
     const token = localStorage.getItem('blink_token');
     if (token) {
-      const socket = initSocket(token);
+      const s = initSocket(token);
+      setSocket(s);
       fetchConversations();
       fetchInvites();
       fetchFriends();

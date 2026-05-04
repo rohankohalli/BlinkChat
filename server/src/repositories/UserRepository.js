@@ -56,6 +56,28 @@ export const UserRepository = {
     return rows;
   },
 
+  async updateResetToken(email, token, expiry) {
+    return await pool.execute(
+      `UPDATE ${UserSchema.tableName} SET reset_token = ?, reset_token_expiry = ? WHERE email = ?`,
+      [token, expiry, email]
+    );
+  },
+
+  async findByResetToken(token) {
+    const [rows] = await pool.execute(
+      `SELECT * FROM ${UserSchema.tableName} WHERE reset_token = ?`,
+      [token]
+    );
+    return rows[0];
+  },
+
+  async updatePassword(userId, passwordHash) {
+    return await pool.execute(
+      `UPDATE ${UserSchema.tableName} SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?`,
+      [passwordHash, userId]
+    );
+  },
+
   filter(user) {
     if (!user) return null;
     const { password_hash, ...publicUser } = user;

@@ -4,7 +4,7 @@ import conversationService from '../services/conversation.service';
 import messageService from '../services/message.service';
 import { getSocket } from '../services/socket';
 
-export const useChat = (user, conversationId) => {
+export const useChat = (user, conversationId, socket) => {
   const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
@@ -44,7 +44,6 @@ export const useChat = (user, conversationId) => {
       const urlParam = (chat.type === 'ephemeral' && chat.room_code) ? chat.room_code : chat.id;
       navigate(`/chat/${urlParam}`);
     }
-    const socket = getSocket();
     if (socket) socket.emit('join_room', chat.id);
   };
 
@@ -69,7 +68,6 @@ export const useChat = (user, conversationId) => {
   };
 
   useEffect(() => {
-    const socket = getSocket();
     if (!socket) return;
 
     const handleNewMessage = (msg) => {
@@ -86,7 +84,7 @@ export const useChat = (user, conversationId) => {
 
     socket.on('new_message', handleNewMessage);
     return () => socket.off('new_message', handleNewMessage);
-  }, []);
+  }, [socket]);
 
   return {
     conversations,

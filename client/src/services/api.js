@@ -30,8 +30,8 @@ api.interceptors.response.use(
       localStorage.removeItem('blink_token');
       localStorage.removeItem('blink_user');
       // If we aren't already on the login page, redirect
-      if (window.location.pathname !== '/auth') {
-        window.location.href = '/auth';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);
