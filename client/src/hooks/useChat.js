@@ -68,6 +68,26 @@ export const useChat = (user, conversationId) => {
     }
   };
 
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNewMessage = (msg) => {
+      if (activeChatRef.current?.id === Number(msg.conversation_id)) {
+        setMessages(prev => {
+          const filtered = prev.filter(m => !(m.optimistic && m.content === msg.content && m.sender_id === msg.sender_id));
+          return [...filtered, msg];
+        });
+      }
+      setConversations(prev => prev.map(c => 
+        c.id === Number(msg.conversation_id) ? { ...c, last_message_at: msg.created_at } : c
+      ));
+    };
+
+    socket.on('new_message', handleNewMessage);
+    return () => socket.off('new_message', handleNewMessage);
+  }, []);
+
   return {
     conversations,
     setConversations,

@@ -7,6 +7,7 @@ import userRoutes from './routes/userRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import inviteRoutes from './routes/inviteRoutes.js';
+import friendRoutes from './routes/friendRoutes.js';
 import errorHandler from './middlewares/errorHandler.js';
 
 import socketHandler from './utils/socketHandler.js';
@@ -32,6 +33,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/conversations', chatRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/invites', inviteRoutes);
+app.use('/api/friends', friendRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

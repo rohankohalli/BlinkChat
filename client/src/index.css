@@ -88,7 +88,7 @@ body::before, body::after {
   width: 60vw;
   height: 60vw;
   border-radius: 50%;
-  filter: blur(120px);
+  filter: blur(80px);
   z-index: -1;
   opacity: var(--aurora-opacity);
   animation: float 20s infinite alternate ease-in-out;
@@ -115,8 +115,8 @@ body::after {
 
 .panel {
   background: var(--bg-panel);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   box-shadow: var(--panel-shadow);

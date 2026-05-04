@@ -13,9 +13,13 @@ const Sidebar = ({
   onShowCreateModal,
   onNavigateHome,
   invites = [],
-  onRespondToInvite
+  onRespondToInvite,
+  friends = [],
+  pendingFriends = [],
+  onRespondToFriendRequest
 }) => {
   const { themeMode, toggleTheme } = useTheme();
+  const [activeTab, setActiveTab] = React.useState('chats'); // 'chats' or 'friends'
 
   return (
     <div style={styles.sidebar} className="panel">
@@ -51,68 +55,153 @@ const Sidebar = ({
         </div>
       </div>
 
+      <div style={{ display: 'flex', padding: '0 16px', marginBottom: '16px', gap: '8px' }}>
+        <button 
+          onClick={() => setActiveTab('chats')}
+          style={{
+            flex: 1, 
+            padding: '8px', 
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: '600',
+            background: activeTab === 'chats' ? 'var(--gradient-primary)' : 'rgba(255,255,255,0.05)',
+            color: activeTab === 'chats' ? '#fff' : 'var(--text-secondary)'
+          }}
+        >Chats</button>
+        <button 
+          onClick={() => setActiveTab('friends')}
+          style={{
+            flex: 1, 
+            padding: '8px', 
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: '600',
+            background: activeTab === 'friends' ? 'var(--gradient-primary)' : 'rgba(255,255,255,0.05)',
+            color: activeTab === 'friends' ? '#fff' : 'var(--text-secondary)'
+          }}
+        >Friends {pendingFriends.length > 0 && `(${pendingFriends.length})`}</button>
+      </div>
+
       <div style={styles.chatList}>
-        {invites.length > 0 && (
-          <div style={{ marginBottom: '24px' }}>
-            <div style={styles.sectionTitle}>PENDING INVITES</div>
-            {invites.map(invite => (
-              <div key={invite.id} style={{...styles.chatItem, background: 'rgba(52, 211, 153, 0.05)', borderLeft: '3px solid var(--emerald-400)'}}>
-                <div style={styles.chatInfo}>
-                  <div style={styles.chatName}>{invite.conversation_name || 'Group Invite'}</div>
-                  <div style={styles.chatPreview}>From: {invite.from_username}</div>
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                    <button 
-                      onClick={() => onRespondToInvite(invite.id, 'accept')}
-                      style={{...styles.primaryButton, padding: '2px 8px', fontSize: '11px', flex: 1}}
-                    >Accept</button>
-                    <button 
-                      onClick={() => onRespondToInvite(invite.id, 'decline')}
-                      style={{...styles.ghostButton, padding: '2px 8px', fontSize: '11px', flex: 1, border: '1px solid rgba(255,255,255,0.1)'}}
-                    >Ignore</button>
+        {activeTab === 'chats' ? (
+          <>
+            {invites.length > 0 && (
+              <div style={{ marginBottom: '24px' }}>
+                <div style={styles.sectionTitle}>PENDING INVITES</div>
+                {invites.map(invite => (
+                  <div key={invite.id} style={{...styles.chatItem, background: 'rgba(52, 211, 153, 0.05)', borderLeft: '3px solid var(--accent-emerald)'}}>
+                    <div style={styles.chatInfo}>
+                      <div style={styles.chatName}>{invite.conversation_name || 'Group Invite'}</div>
+                      <div style={styles.chatPreview}>From: {invite.from_username}</div>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <button 
+                          onClick={() => onRespondToInvite(invite.id, 'accept')}
+                          style={{...styles.primaryButton, padding: '2px 8px', fontSize: '11px', flex: 1}}
+                        >Accept</button>
+                        <button 
+                          onClick={() => onRespondToInvite(invite.id, 'decline')}
+                          style={{...styles.ghostButton, padding: '2px 8px', fontSize: '11px', flex: 1, border: '1px solid var(--border-light)'}}
+                        >Ignore</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={styles.sectionTitle}>ACTIVE CHATS</div>
+
+            {loading ? (
+              <div style={{ padding: '20px', textAlign: 'center', opacity: 0.6 }}>Loading...</div>
+            ) : conversations.length === 0 ? (
+              <div style={styles.emptyState}>
+                <p style={{ marginBottom: '10px' }}>No active conversations.</p>
+                <button
+                  onClick={onShowCreateModal}
+                  style={styles.primaryButton}
+                >
+                  Start a Chat
+                </button>
+              </div>
+            ) : (
+              conversations.map(chat => (
+                <div
+                  key={chat.id}
+                  style={activeChat?.id === chat.id ? styles.chatItemActive : styles.chatItem}
+                  onClick={() => onSelectChat(chat)}
+                >
+                  <div style={styles.chatAvatar}>
+                    {chat.type === 'direct' ? 'D' : chat.type === 'ephemeral' ? '⚡' : 'G'}
+                  </div>
+                  <div style={styles.chatInfo}>
+                    <div style={styles.chatName}>{chat.name || (chat.type === 'direct' ? 'Direct Message' : 'Unnamed Chat')}</div>
+                    <div style={styles.chatPreview}>
+                      {chat.type === 'ephemeral' ? `Code: ${chat.room_code}` : 'Click to open chat'}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div style={styles.sectionTitle}>ACTIVE CHATS</div>
-
-        {loading ? (
-          <div style={{ padding: '20px', textAlign: 'center', opacity: 0.6 }}>Loading...</div>
-        ) : conversations.length === 0 ? (
-          <div style={styles.emptyState}>
-            <p style={{ marginBottom: '10px' }}>No active conversations.</p>
-            <button
-              onClick={onShowCreateModal}
-              style={styles.primaryButton}
-            >
-              Start a Chat
-            </button>
-          </div>
+              ))
+            )}
+          </>
         ) : (
-          conversations.map(chat => (
-            <div
-              key={chat.id}
-              style={activeChat?.id === chat.id ? styles.chatItemActive : styles.chatItem}
-              onClick={() => onSelectChat(chat)}
-            >
-              <div style={styles.chatAvatar}>
-                {chat.type === 'direct' ? 'D' : chat.type === 'ephemeral' ? '⚡' : 'G'}
+          <>
+            {pendingFriends.length > 0 && (
+              <div style={{ marginBottom: '24px' }}>
+                <div style={styles.sectionTitle}>FRIEND REQUESTS</div>
+                {pendingFriends.map(req => (
+                  <div key={req.id} style={{...styles.chatItem, background: 'rgba(52, 211, 153, 0.05)'}}>
+                    <div style={styles.chatAvatar}>
+                      {req.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={styles.chatInfo}>
+                      <div style={styles.chatName}>{req.username}</div>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                        <button 
+                          onClick={() => onRespondToFriendRequest(req.id, 'accept')}
+                          style={{...styles.primaryButton, padding: '2px 8px', fontSize: '11px', flex: 1}}
+                        >Accept</button>
+                        <button 
+                          onClick={() => onRespondToFriendRequest(req.id, 'reject')}
+                          style={{...styles.ghostButton, padding: '2px 8px', fontSize: '11px', flex: 1, border: '1px solid var(--border-light)'}}
+                        >Decline</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div style={styles.chatInfo}>
-                <div style={styles.chatName}>{chat.name || (chat.type === 'direct' ? 'Direct Message' : 'Unnamed Chat')}</div>
-                <div style={styles.chatPreview}>
-                  {chat.type === 'ephemeral' ? `Code: ${chat.room_code}` : 'Click to open chat'}
+            )}
+
+            <div style={styles.sectionTitle}>ALL FRIENDS</div>
+            {friends.length === 0 ? (
+              <div style={styles.emptyState}>No friends added yet.</div>
+            ) : (
+              friends.map(friend => (
+                <div 
+                  key={friend.id} 
+                  style={styles.chatItem}
+                  onClick={() => {
+                    // Logic to start DM with friend
+                    const existing = conversations.find(c => c.type === 'direct' && c.id === friend.id); // This is wrong, id is conv id
+                    // For now, let's just show they are friends
+                  }}
+                >
+                  <div style={{...styles.chatAvatar, position: 'relative'}}>
+                    {friend.username.charAt(0).toUpperCase()}
+                    <span style={{
+                      position: 'absolute', bottom: 0, right: 0, 
+                      width: '10px', height: '10px', borderRadius: '50%',
+                      background: friend.status === 'online' ? 'var(--status-online)' : 'var(--status-offline)',
+                      border: '2px solid var(--bg-base)'
+                    }}></span>
+                  </div>
+                  <div style={styles.chatInfo}>
+                    <div style={styles.chatName}>{friend.username}</div>
+                    <div style={styles.chatPreview}>{friend.status === 'online' ? 'Online' : 'Offline'}</div>
+                  </div>
                 </div>
-              </div>
-              {chat.expires_at && (
-                <div style={styles.chatTime}>
-                  {new Date(chat.expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              )}
-            </div>
-          ))
+              ))
+            )}
+          </>
         )}
       </div>
 

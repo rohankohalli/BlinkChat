@@ -5,7 +5,9 @@ import { initSocket, disconnectSocket } from '../services/socket';
 import conversationService from '../services/conversation.service';
 import userService from '../services/user.service';
 import inviteService from '../services/invite.service';
+import friendService from '../services/friend.service';
 import { useChat } from '../hooks/useChat';
+import { showAlert, showConfirm, showToast } from '../utils/swal';
 import Sidebar from '../components/Chat/Sidebar';
 import ChatWindow from '../components/Chat/ChatWindow';
 import { CreateRoomModal, JoinRoomModal, InviteModal } from '../components/Chat/Modals';
@@ -39,6 +41,8 @@ const Dashboard = () => {
   const [loadingSearch, setLoadingSearch] = useState(false);
 
   const [invites, setInvites] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [pendingFriends, setPendingFriends] = useState([]);
 
   const messagesEndRef = useRef(null);
 
@@ -78,26 +82,34 @@ const Dashboard = () => {
     }
   };
 
+  const fetchFriends = async () => {
+    try {
+      const res = await friendService.getFriends();
+      setFriends(res.data);
+      const pendingRes = await friendService.getPendingRequests();
+      setPendingFriends(pendingRes.data);
+    } catch (err) {
+      console.error("Error fetching friends:", err);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('blink_token');
     if (token) {
       const socket = initSocket(token);
       fetchConversations();
       fetchInvites();
+      fetchFriends();
 
-      socket.on('new_message', (msg) => {
-        if (activeChatRef.current?.id === Number(msg.conversation_id)) {
-          setMessages(prev => {
-            const filtered = prev.filter(m => !(m.optimistic && m.content === msg.content && m.sender_id === msg.sender_id));
-            return [...filtered, msg];
-          });
-        }
-        setConversations(prev => prev.map(c =>
-          c.id === Number(msg.conversation_id) ? { ...c, last_message_at: msg.created_at } : c
-        ));
-      });
+      const interval = setInterval(() => {
+        fetchInvites();
+        fetchFriends();
+      }, 10000);
 
-      return () => socket.off('new_message');
+      return () => {
+        clearInterval(interval);
+        disconnectSocket();
+      };
     }
   }, []);
 
@@ -130,9 +142,10 @@ const Dashboard = () => {
       setShowCreateModal(false);
       setRoomName('');
       fetchConversations();
+      showToast("Room created!");
       handleSelectChat({ id: res.data.conversationId, ...res.data });
     } catch (err) {
-      console.error("Error creating room:", err);
+      showAlert("Error", err.response?.data?.message || "Failed to create room", "error");
     }
   };
 
@@ -144,9 +157,10 @@ const Dashboard = () => {
       setShowJoinModal(false);
       setRoomCode('');
       fetchConversations();
+      showToast("Joined successfully!");
       handleSelectChat({ id: res.data.conversationId });
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to join room");
+      showAlert("Error", err.response?.data?.message || "Failed to join room", "error");
     }
   };
 
@@ -154,25 +168,41 @@ const Dashboard = () => {
     if (!activeChat) return;
     try {
       await inviteService.sendInvite(activeChat.id, targetUserId);
-      alert("Invite sent successfully!");
+      showToast("Invite sent successfully!");
       setShowInviteModal(false);
       setUserSearch('');
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to send invite");
+      showAlert("Error", err.response?.data?.message || "Failed to send invite", "error");
+    }
+  };
+
+  const handleAddFriend = async (friendId) => {
+    try {
+      await friendService.sendFriendRequest(friendId);
+      showToast("Friend request sent!");
+    } catch (err) {
+      showAlert("Error", err.response?.data?.message || "Failed to send friend request", "error");
     }
   };
 
   const handleLeaveRoom = async () => {
     if (!activeChat) return;
-    if (!window.confirm(`Are you sure you want to leave "${activeChat.name || 'this room'}"?`)) return;
+    const result = await showConfirm(
+      "Are you sure?",
+      `You are about to leave "${activeChat.name || 'this room'}"`,
+      "Leave Room"
+    );
+
+    if (!result.isConfirmed) return;
 
     try {
       await conversationService.leaveRoom(activeChat.id);
       fetchConversations();
       setActiveChat(null);
       navigate('/chat');
+      showToast("Left room successfully");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to leave room");
+      showAlert("Error", err.response?.data?.message || "Failed to leave room", "error");
     }
   };
 
@@ -180,15 +210,15 @@ const Dashboard = () => {
     try {
       const res = await inviteService.respondToInvite(inviteId, action);
       fetchInvites();
+      showToast(`Invite ${action}ed`);
       if (action === 'accept') {
         fetchConversations();
-        // Option to navigate to the new chat
         if (res.data.conversationId) {
           navigate(`/chat/${res.data.conversationId}`);
         }
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to respond to invite");
+      showAlert("Error", err.response?.data?.message || "Failed to respond to invite", "error");
     }
   };
 
@@ -196,6 +226,16 @@ const Dashboard = () => {
     disconnectSocket();
     logout();
     navigate('/auth');
+  };
+
+  const handleRespondToFriendRequest = async (friendId, action) => {
+    try {
+      await friendService.respondToRequest(friendId, action);
+      fetchFriends();
+      showToast(`Friend request ${action}ed`);
+    } catch (err) {
+      showAlert("Error", "Failed to respond to friend request", "error");
+    }
   };
 
   return (
@@ -212,6 +252,9 @@ const Dashboard = () => {
         onShowCreateModal={() => setShowCreateModal(true)}
         onRespondToInvite={handleRespondToInvite}
         onNavigateHome={() => navigate('/chat')}
+        friends={friends}
+        pendingFriends={pendingFriends}
+        onRespondToFriendRequest={handleRespondToFriendRequest}
       />
 
       <div style={styles.mainChat} className="panel">
@@ -250,9 +293,11 @@ const Dashboard = () => {
         show={showInviteModal}
         onClose={() => setShowInviteModal(false)}
         onInvite={handleInviteUser}
+        onAddFriend={handleAddFriend}
         searchTerm={userSearch}
         setSearchTerm={setUserSearch}
         users={searchResults}
+        friends={friends}
         loadingSearch={loadingSearch}
       />
     </div>
