@@ -7,7 +7,7 @@ const AuthLayout = ({ children, title, subtitle }) => {
             <div style={authStyles.iconDot}></div>
             <div style={{ ...authStyles.iconDot, animationDelay: '0.2s' }}></div>
           </div>
-          <h1 style={authStyles.title}>{title} <span className="text-gradient">BlinkChat</span></h1>
+          <h1 style={authStyles.title}>{title} <span className="text-gradient">Aura</span></h1>
           {subtitle && <p style={authStyles.subtitle}>{subtitle}</p>}
         </div>
         {children}
@@ -28,6 +28,11 @@ export const authStyles = {
     width: '100%',
     maxWidth: '420px',
     padding: '40px',
+    background: 'var(--bg-panel)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: 'var(--radius-xl)',
+    border: '1px solid var(--border-glass)',
+    boxShadow: 'var(--shadow-aura)',
   },
   header: {
     marginBottom: '32px',
@@ -45,7 +50,7 @@ export const authStyles = {
     width: '12px',
     height: '12px',
     borderRadius: '50%',
-    background: 'var(--gradient-primary)',
+    background: 'var(--gradient-aura)',
     animation: 'pulse 1.5s infinite alternate',
   },
   title: {
@@ -78,8 +83,8 @@ export const authStyles = {
   input: {
     padding: '14px 16px',
     borderRadius: 'var(--radius-md)',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    border: '1px solid var(--border-light)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid var(--border-glass)',
     color: 'var(--text-primary)',
     fontSize: '1rem',
     transition: 'all 0.2s ease',
@@ -88,12 +93,14 @@ export const authStyles = {
     marginTop: '12px',
     padding: '14px 20px',
     borderRadius: 'var(--radius-md)',
-    background: 'var(--gradient-primary)',
+    background: 'var(--gradient-aura)',
     color: '#ffffff',
     fontSize: '1rem',
     fontWeight: '600',
-    boxShadow: '0 8px 20px rgba(6, 182, 212, 0.25)',
+    boxShadow: '0 8px 20px rgba(99, 102, 241, 0.2)',
     letterSpacing: '0.01em',
+    border: 'none',
+    cursor: 'pointer',
   },
   errorBanner: {
     padding: '12px 16px',
@@ -124,10 +131,11 @@ export const authStyles = {
     fontSize: '0.9rem',
   },
   toggleLink: {
-    color: 'var(--accent-cyan)',
+    color: 'var(--accent-secondary)',
     cursor: 'pointer',
     fontWeight: '500',
     transition: 'color 0.2s',
+    textDecoration: 'none',
   }
 };
 

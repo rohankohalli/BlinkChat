@@ -29,7 +29,7 @@ const Sidebar = ({
           className="text-gradient"
           onClick={onNavigateHome}
         >
-          BlinkChat
+          ChatIQ
         </h2>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
@@ -60,26 +60,32 @@ const Sidebar = ({
           onClick={() => setActiveTab('chats')}
           style={{
             flex: 1, 
-            padding: '8px', 
-            borderRadius: '8px',
+            padding: '10px', 
+            borderRadius: '12px',
             fontSize: '13px',
-            fontWeight: '600',
-            background: activeTab === 'chats' ? 'var(--gradient-primary)' : 'rgba(255,255,255,0.05)',
-            color: activeTab === 'chats' ? '#fff' : 'var(--text-secondary)'
+            fontWeight: '700',
+            background: activeTab === 'chats' ? 'var(--gradient-gold)' : 'var(--border-glass)',
+            color: activeTab === 'chats' ? '#000' : 'var(--text-secondary)',
+            border: 'none',
+            transition: 'all 0.1s ease',
+            cursor: 'pointer'
           }}
-        >Chats</button>
+        >CHATS</button>
         <button 
           onClick={() => setActiveTab('friends')}
           style={{
             flex: 1, 
-            padding: '8px', 
-            borderRadius: '8px',
+            padding: '10px', 
+            borderRadius: '12px',
             fontSize: '13px',
-            fontWeight: '600',
-            background: activeTab === 'friends' ? 'var(--gradient-primary)' : 'rgba(255,255,255,0.05)',
-            color: activeTab === 'friends' ? '#fff' : 'var(--text-secondary)'
+            fontWeight: '700',
+            background: activeTab === 'friends' ? 'var(--gradient-gold)' : 'var(--border-glass)',
+            color: activeTab === 'friends' ? '#000' : 'var(--text-secondary)',
+            border: 'none',
+            transition: 'all 0.1s ease',
+            cursor: 'pointer'
           }}
-        >Friends {pendingFriends.length > 0 && `(${pendingFriends.length})`}</button>
+        >FRIENDS {pendingFriends.length > 0 && `(${pendingFriends.length})`}</button>
       </div>
 
       <div style={styles.chatList}>
@@ -127,11 +133,28 @@ const Sidebar = ({
               conversations.map(chat => (
                 <div
                   key={chat.id}
+                  className="hover-elevate"
                   style={activeChat?.id === chat.id ? styles.chatItemActive : styles.chatItem}
                   onClick={() => onSelectChat(chat)}
                 >
                   <div style={styles.chatAvatar}>
-                    {chat.type === 'direct' ? 'D' : chat.type === 'ephemeral' ? '⚡' : 'G'}
+                    {chat.type === 'direct' ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    ) : chat.type === 'ephemeral' ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                      </svg>
+                    )}
                   </div>
                   <div style={styles.chatInfo}>
                     <div style={styles.chatName}>{chat.name || (chat.type === 'direct' ? 'Direct Message' : 'Unnamed Chat')}</div>
@@ -178,6 +201,7 @@ const Sidebar = ({
               friends.map(friend => (
                 <div 
                   key={friend.id} 
+                  className="hover-elevate"
                   style={styles.chatItem}
                   onClick={() => {
                     // Logic to start DM with friend
@@ -248,13 +272,37 @@ const Sidebar = ({
               </svg>
             )}
           </button>
-          <button onClick={onLogout} style={styles.logoutButton} title="Sign Out">
+          <button 
+            onClick={onLogout} 
+            style={{
+              ...styles.iconButton, 
+              color: '#ef4444', 
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              background: 'rgba(239, 68, 68, 0.05)'
+            }} 
+            title="Sign Out"
+          >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
               <line x1="12" y1="2" x2="12" y2="12"></line>
             </svg>
           </button>
         </div>
+      </div>
+
+      {/* Dynamic Brand Footer */}
+      <div style={{
+        padding: '0 20px 20px 20px',
+        fontSize: '0.62rem',
+        color: 'var(--text-muted)',
+        textAlign: 'center',
+        letterSpacing: '0.08em',
+        lineHeight: '1.4',
+        opacity: 0.7,
+        textTransform: 'uppercase'
+      }}>
+        © {new Date().getFullYear()} CHATIQ<br/>
+        MADE BY ROHAN KOHALLI
       </div>
     </div>
   );

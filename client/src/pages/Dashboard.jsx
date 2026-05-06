@@ -41,12 +41,24 @@ const Dashboard = () => {
   const [userSearch, setUserSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [loadingSearch, setLoadingSearch] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // For mobile responsiveness
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const [invites, setInvites] = useState([]);
   const [friends, setFriends] = useState([]);
   const [pendingFriends, setPendingFriends] = useState([]);
 
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(true);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -243,24 +255,51 @@ const Dashboard = () => {
 
   return (
     <div style={styles.layout}>
-      <Sidebar
-        user={user}
-        conversations={conversations}
-        activeChat={activeChat}
-        invites={invites}
-        loading={loading}
-        onSelectChat={handleSelectChat}
-        onLogout={handleLogout}
-        onShowJoinModal={() => setShowJoinModal(true)}
-        onShowCreateModal={() => setShowCreateModal(true)}
-        onRespondToInvite={handleRespondToInvite}
-        onNavigateHome={() => navigate('/chat')}
-        friends={friends}
-        pendingFriends={pendingFriends}
-        onRespondToFriendRequest={handleRespondToFriendRequest}
-      />
+      {isMobile && sidebarOpen && (
+        <div className="mobile-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
+      
+      <div style={{
+        ...styles.sidebar,
+        position: isMobile ? 'fixed' : 'relative',
+        left: sidebarOpen ? 0 : '-100%',
+        top: 0,
+        zIndex: isMobile ? 101 : 1,
+        height: '100%',
+        width: isMobile ? '100vw' : styles.sidebar.width,
+        minWidth: isMobile ? '100vw' : styles.sidebar.minWidth,
+        boxShadow: isMobile ? '0 0 50px rgba(0,0,0,0.8)' : 'none'
+      }}>
+        <Sidebar
+          user={user}
+          conversations={conversations}
+          activeChat={activeChat}
+          invites={invites}
+          loading={loading}
+          onSelectChat={(chat) => {
+            handleSelectChat(chat);
+            if (isMobile) setSidebarOpen(false);
+          }}
+          onLogout={handleLogout}
+          onShowJoinModal={() => setShowJoinModal(true)}
+          onShowCreateModal={() => setShowCreateModal(true)}
+          onRespondToInvite={handleRespondToInvite}
+          onNavigateHome={() => {
+            navigate('/chat');
+            if (isMobile) setSidebarOpen(false);
+          }}
+          friends={friends}
+          pendingFriends={pendingFriends}
+          onRespondToFriendRequest={handleRespondToFriendRequest}
+        />
+      </div>
 
-      <div style={styles.mainChat} className="panel">
+      <div style={{
+        ...styles.mainChat,
+        marginLeft: !isMobile && sidebarOpen ? 0 : 0,
+        width: '100%',
+        flex: 1
+      }} className="panel">
         <ChatWindow
           user={user}
           activeChat={activeChat}
@@ -273,6 +312,8 @@ const Dashboard = () => {
           onShowInviteModal={() => setShowInviteModal(true)}
           onLeaveRoom={handleLeaveRoom}
           messagesEndRef={messagesEndRef}
+          isMobile={isMobile}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
       </div>
 

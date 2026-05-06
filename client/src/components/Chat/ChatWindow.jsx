@@ -12,17 +12,78 @@ const ChatWindow = ({
   onShowJoinModal,
   onShowInviteModal,
   onLeaveRoom,
-  messagesEndRef
+  messagesEndRef,
+  isMobile,
+  onToggleSidebar
 }) => {
   if (!activeChat) {
     return (
       <div style={styles.noChatSelected}>
-        <div style={styles.welcomeIcon}>✨</div>
-        <h2 style={styles.welcomeTitle}>Welcome back, {user?.username}!</h2>
-        <p style={styles.welcomeText}>Select a conversation from the sidebar or start a new ephemeral room.</p>
-        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-          <button onClick={onShowCreateModal} style={styles.primaryButton}>Create Room</button>
-          <button onClick={onShowJoinModal} style={styles.secondaryButton}>Join Room</button>
+        {isMobile && (
+          <button 
+            onClick={onToggleSidebar}
+            style={{ 
+              position: 'absolute', 
+              top: '24px', 
+              left: '24px', 
+              background: 'var(--gradient-gold)', 
+              border: 'none', 
+              borderRadius: '12px',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#000'
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        )}
+        <div style={{ marginBottom: '32px' }}>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+            <path d="M5 3v4M3 5h4M19 3v4M17 5h4"/>
+          </svg>
+        </div>
+        <h2 style={{...styles.welcomeTitle, textAlign: 'center'}}>Welcome back, {user?.username}!</h2>
+        <p style={{...styles.welcomeText, color: 'var(--text-secondary)', marginBottom: '40px', textAlign: 'center', maxWidth: '400px'}}>
+          Select a conversation from the sidebar or start a new ephemeral room.
+        </p>
+        
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+          <button 
+            onClick={onShowCreateModal} 
+            style={{
+              ...styles.primaryButton, 
+              background: 'var(--accent-emerald)', 
+              color: '#fff',
+              padding: '12px 28px',
+              className: 'hover-elevate'
+            }}
+          >
+            Create Room
+          </button>
+          <button 
+            onClick={onShowJoinModal} 
+            style={{
+              ...styles.iconButton, 
+              padding: '12px 28px', 
+              width: 'auto', 
+              height: 'auto',
+              fontWeight: '700', 
+              fontSize: '0.9rem',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: 'none',
+              className: 'hover-elevate'
+            }}
+          >
+            Join Room
+          </button>
         </div>
       </div>
     );
@@ -33,6 +94,18 @@ const ChatWindow = ({
       {/* Chat Header */}
       <div style={styles.chatHeader}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {isMobile && (
+            <button 
+              onClick={onToggleSidebar}
+              style={{...styles.iconButton, marginRight: '8px', background: 'transparent', border: 'none'}}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+          )}
           <div style={styles.chatAvatarLarge}>
             {activeChat.type === 'ephemeral' ? '⚡' : (activeChat.name ? activeChat.name.charAt(0).toUpperCase() : 'G')}
           </div>
